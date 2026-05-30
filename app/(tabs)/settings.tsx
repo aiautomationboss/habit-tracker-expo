@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useHabits } from '../../src/store/useHabits';
 import { disableAllNotifications, syncNotifications } from '../../src/lib/notifications';
 import { exportData, importData } from '../../src/lib/backup';
+import { signOut } from '../../src/lib/supabase';
+import { stopSync } from '../../src/lib/sync';
 import { TimeField } from '../../src/components/TimeField';
 import { useColors } from '../../src/lib/useColors';
 import { ThemeName } from '../../src/types';
@@ -50,6 +52,19 @@ export default function SettingsScreen() {
   const onTimeChange = (hour: number, minute: number) => {
     setReminder({ hour, minute });
     if (reminderEnabled) syncNotifications();
+  };
+
+  const onSignOut = () => {
+    Alert.alert('Sign out', 'You can sign back in any time. Your data stays in the cloud.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Sign out',
+        onPress: async () => {
+          stopSync();
+          await signOut();
+        },
+      },
+    ]);
   };
 
   const onReset = () => {
@@ -189,6 +204,14 @@ export default function SettingsScreen() {
           <Pressable style={s.dataRow} onPress={onReset}>
             <Text style={[s.dataLabel, { color: c.danger }]}>Reset app</Text>
             <Text style={[s.dataChevron, { color: c.danger }]}>⟲</Text>
+          </Pressable>
+        </View>
+
+        <Text style={s.section}>Account</Text>
+        <View style={s.card}>
+          <Pressable style={s.dataRow} onPress={onSignOut}>
+            <Text style={s.dataLabel}>Sign out</Text>
+            <Text style={s.dataChevron}>↪</Text>
           </Pressable>
         </View>
 

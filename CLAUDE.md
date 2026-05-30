@@ -257,6 +257,58 @@ phase.
 
 ---
 
+## 10b. Supabase backend (added later)
+
+Cloud sync + auth was added on top of the local-first store.
+
+**Project**
+- URL: `https://qohqmllogilkvgouujjx.supabase.co`
+- Publishable key (client-safe): in `src/lib/supabase.ts`
+- Migrations live in `supabase/migrations/`. Apply via:
+  ```
+  Supabase Dashboard → SQL Editor → paste 0001_initial_schema.sql → Run
+  ```
+  Or with the CLI: `supabase link --project-ref qohqmllogilkvgouujjx && supabase db push`
+
+**Schema** (all tables RLS-scoped to `auth.uid()`)
+- `profiles` — one row per user with theme / reminder / sounds / onboarded /
+  last_opened_at. Auto-created by a trigger on `auth.users` insert.
+- `habits` — client-generated id, user_id FK, name/type/target/color/icon,
+  `order`, `schedule` int[], reminder_hour/minute nullable.
+- `completions` — (user_id, habit_id, day_key) PK, count.
+- `day_notes` — (user_id, day_key) PK, note.
+- `reflections` — (user_id, week_key) PK, worked/obstacles/intention.
+- `challenges` — id PK, user_id, habit_ids[], duration_days, start_date.
+
+**Client**
+- `src/lib/supabase.ts` — createClient with AsyncStorage session, plus
+  thin `signUpWithEmail` / `signInWithEmail` / `signOut` / `getSession` /
+  `onAuthStateChange` wrappers.
+- `src/lib/sync.ts` — full pull on login (server wins unless server is
+  empty, then push local); zustand subscription that debounces 1.5 s and
+  full-upserts on any store change. `startSync(userId)` / `stopSync()` /
+  `syncNow()`. Conflict resolution: last-write-wins per row (fine for
+  single-user; revisit for multi-device).
+- `app/auth.tsx` — sign-in / sign-up tabs, email + password.
+- `app/_layout.tsx` — subscribes to auth changes, sets `userId`, starts /
+  stops sync, redirects on sign-out.
+- `app/index.tsx` — gate order: hydration → auth → onboarded → /today.
+- `app/(tabs)/settings.tsx` — adds an Account section with **Sign out**.
+
+**Store changes**
+- Added `userId: string | null` (NOT persisted — derived from Supabase
+  session on each launch).
+- `setUserId(id)` setter.
+
+**Limits / known gaps**
+- No realtime subscriptions (live multi-device sync). The 1.5 s debounce
+  is the only push cadence.
+- Email confirmation is on by default — users get a verification email on
+  sign-up before they can sign in. Disable in Supabase dashboard if you
+  want frictionless signup.
+- The `--legacy-peer-deps` install flag is still required because of the
+  RN ecosystem; nothing to do with Supabase.
+
 ## 11. Why no Tasks/To-Dos here
 
 Tasks (deadline + status + done-once) and habits (recurring + streak) have

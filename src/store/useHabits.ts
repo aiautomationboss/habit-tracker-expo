@@ -45,6 +45,7 @@ interface HabitsState {
   reflections: Reflections;
   lastOpenedAt: string | null;
   hydrated: boolean;
+  userId: string | null;
   onboarded: boolean;
   theme: ThemeName;
   challenge: Challenge | null;
@@ -53,6 +54,7 @@ interface HabitsState {
   reminderMinute: number;
   soundsEnabled: boolean;
 
+  setUserId: (id: string | null) => void;
   setOnboarded: (v: boolean) => void;
   setTheme: (t: ThemeName) => void;
   setReminder: (cfg: Partial<{ enabled: boolean; hour: number; minute: number }>) => void;
@@ -98,6 +100,7 @@ export const useHabits = create<HabitsState>()(
       reflections: {},
       lastOpenedAt: null,
       hydrated: false,
+      userId: null,
       onboarded: false,
       theme: 'dark',
       challenge: null,
@@ -106,6 +109,7 @@ export const useHabits = create<HabitsState>()(
       reminderMinute: 0,
       soundsEnabled: true,
 
+      setUserId: (id) => set({ userId: id }),
       setOnboarded: (v) => set({ onboarded: v }),
       setTheme: (t) => set({ theme: t }),
       setSoundsEnabled: (v) => set({ soundsEnabled: v }),
