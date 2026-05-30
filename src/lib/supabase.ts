@@ -29,6 +29,12 @@ export async function signOut() {
   return supabase.auth.signOut();
 }
 
+// Sends a password recovery email. The link lands on Supabase's hosted
+// password-update page (no app deep-link configuration required).
+export async function sendPasswordResetEmail(email: string) {
+  return supabase.auth.resetPasswordForEmail(email);
+}
+
 export async function getSession() {
   const { data } = await supabase.auth.getSession();
   return data.session;
