@@ -62,6 +62,8 @@ export default function SettingsScreen() {
         onPress: async () => {
           stopSync();
           await signOut();
+          // Action-driven navigation — see note in app/_layout.tsx.
+          router.replace('/auth');
         },
       },
     ]);

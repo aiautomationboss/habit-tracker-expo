@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import {
   sendPasswordResetEmail,
@@ -76,8 +77,14 @@ export default function AuthScreen() {
         }
       } else {
         const { error } = await signInWithEmail(email.trim(), password);
-        if (error) Alert.alert('Sign in failed', error.message);
-        // Auth state change handler will route on success.
+        if (error) {
+          Alert.alert('Sign in failed', error.message);
+        } else {
+          // Drive the navigation from the action — never from the root
+          // layout effect. The gate at '/' will route to onboarding or
+          // /today based on the now-set session.
+          router.replace('/');
+        }
       }
     } finally {
       setBusy(false);
